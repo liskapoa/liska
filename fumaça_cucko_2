@@ -1,0 +1,142 @@
+#include <LiquidCrystal.h>
+#include <EEPROM.h>
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+int tempo_desligado =20;
+int tempo_ligado=5;
+int contador_ligado = 0;
+int contador_desligado = 0;
+int botao1;
+int botao2;
+int botao3;
+int botao4;
+int saida_rele =13;
+
+union u_tag {
+   byte b[4]; 
+    float f;
+  } u;
+
+void setup()
+{  
+pinMode(saida_rele,OUTPUT);
+digitalWrite(saida_rele, LOW);
+lcd.begin(16, 2);
+lcd.clear() ;
+lcd.setCursor(0, 0);
+lcd.print("Cucko fumaca");
+lcd.setCursor(0, 1);
+lcd.print("By Liska    V2.0");
+lermem();
+delay(3000);
+teclado();
+lcd.clear();
+ if (botao1 <= 500 && botao2 <= 500 && botao3 <= 500 && botao4 <= 500){ reset(); }; 
+contador_desligado = tempo_desligado;
+contador_ligado = tempo_ligado;
+}
+
+void loop(){
+
+while (contador_ligado > 0){  digitalWrite(saida_rele, HIGH);contador_ligado --;  LCD();tempo();}; 
+while (contador_desligado > 0){digitalWrite(saida_rele, LOW);contador_desligado --;  LCD();tempo();}; 
+
+if(contador_desligado == 0){contador_desligado = tempo_desligado;};
+if(contador_ligado == 0){contador_ligado = tempo_ligado;};
+
+};
+/////////////////////////////////////
+void lermem(){
+
+   u.b[0] = EEPROM.read(0);
+   u.b[1] = EEPROM.read(1);
+   u.b[2] = EEPROM.read(2);
+   u.b[3] = EEPROM.read(3); 
+     
+     tempo_desligado = u.f;
+     
+   u.b[0] = EEPROM.read(4);
+   u.b[1] = EEPROM.read(5);
+   u.b[2] = EEPROM.read(6);
+   u.b[3] = EEPROM.read(7);     
+     
+     tempo_ligado = u.f;
+};
+////////////////////////////
+void salvar(){
+
+u.f= tempo_desligado;
+   
+  EEPROM.write(0, u.b[0]);
+  EEPROM.write(1, u.b[1]);
+  EEPROM.write(2, u.b[2]);
+  EEPROM.write(3, u.b[3]);
+  
+   u.f= tempo_ligado;
+   
+  EEPROM.write(4, u.b[0]);
+  EEPROM.write(5, u.b[1]);
+  EEPROM.write(6, u.b[2]);
+  EEPROM.write(7, u.b[3]);
+};
+////////////////////////////////
+ void teclado(){
+   
+botao4 = analogRead(A0); 
+botao3 = analogRead(A1); 
+botao2 = analogRead(A2); 
+botao1 = analogRead(A3); 
+
+if (botao1 <= 500 && tempo_desligado > 0){tempo_desligado --; salvar();  LCD();}; 
+if (botao2 <= 500){tempo_desligado ++; salvar();  LCD();};                 
+if (botao3 <= 500 && tempo_ligado > 0){tempo_ligado --; salvar();  LCD();}; 
+if (botao4 <= 500){tempo_ligado ++; salvar();  LCD();};      
+
+     do{
+     }while (analogRead(A0) <= 500 );
+     do{
+     }while (analogRead(A1) <= 500 );
+     do{
+     }while (analogRead(A2) <= 500 );
+     do{
+     }while (analogRead(A3) <= 500 );
+       
+};
+///////////////////////// 
+ void LCD(){
+ //  lcd.clear() ;
+ lcd.setCursor(0, 0);  
+ lcd.print("              ");
+ lcd.setCursor(0, 1);
+ lcd.print("              ");
+   
+ lcd.setCursor(0, 0);
+ lcd.print("OFF ");
+ lcd.print(tempo_desligado);
+ lcd.print("s ");
+ lcd.print(contador_desligado);
+ lcd.print("s ");
+ lcd.setCursor(0, 1);
+ lcd.print("ON ");
+ lcd.print(tempo_ligado);
+ lcd.print("s ");
+ lcd.print(contador_ligado);
+ lcd.print("s ");
+ if(contador_ligado > 0){lcd.print(" ON");};
+  }; 
+ /////////////////////////
+ void reset(){
+tempo_desligado =60;
+tempo_ligado =5;
+lcd.clear() ;
+lcd.setCursor(0, 0);
+lcd.print("Padrao fabrica");
+delay(3000);
+lcd.clear();
+ };
+ ////////////////
+ void tempo(){
+   for (int i=0; i <= 10; i++){
+     teclado();
+     delay(100);}; 
+ };
+ ////////////////
